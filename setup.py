@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='django-odnoklassniki-groups',
-    version=__import__('odnoklassniki_groups').__version__,
-    description='Django implementation for odnoklassniki API Groups',
+    name='django-odnoklassniki-discussions',
+    version=__import__('odnoklassniki_discussions').__version__,
+    description='Django implementation for odnoklassniki API Discussions',
     long_description=open('README.md').read(),
     author='ramusus',
     author_email='ramusus@gmail.com',
-    url='https://github.com/ramusus/django-odnoklassniki-groups',
-    download_url='http://pypi.python.org/pypi/django-odnoklassniki-groups',
+    url='https://github.com/ramusus/django-odnoklassniki-discussions',
+    download_url='http://pypi.python.org/pypi/django-odnoklassniki-discussions',
     license='BSD',
     packages=find_packages(),
     include_package_data=True,
