@@ -27,6 +27,9 @@ GROUP_DISCUSSION_WITH_MANY_LIKES1_ID = 62521829903216
 GROUP_COMMENT_WITH_MANY_LIKES1_DISCUSSION_ID = 62425402395504
 GROUP_COMMENT_WITH_MANY_LIKES1_ID = 'MTM5NDAwMzI5NjE2MzotNjAyOToxMzk0MDAzMjk2MTYzOjYyNDI1NDAyMzk1NTA0OjE='
 
+GROUP4_ID = 50752764379349
+GROUP4_DISCUSSION_WITH_GROUP_COMMENTS_ID = 62520921350357
+
 class OdnoklassnikiDiscussionsTest(TestCase):
 
     def test_fetch_group_discussions(self):
@@ -90,6 +93,20 @@ class OdnoklassnikiDiscussionsTest(TestCase):
         self.assertEqual(discussion.comments_count, comments.count())
         self.assertEqual(discussion.comments_count, Comment.objects.count())
         self.assertEqual(discussion.comments_count, discussion.comments.count())
+
+    def test_fetch_discussion_comments_by_group(self):
+
+        group = GroupFactory(id=GROUP4_ID)
+        discussion = DiscussionFactory(owner=group, id=GROUP4_DISCUSSION_WITH_GROUP_COMMENTS_ID, object_type='GROUP_TOPIC')
+
+        self.assertEqual(Comment.objects.count(), 0)
+
+        comments = discussion.fetch_comments(all=True)
+        comment = comments.get(author_id=group.id)
+
+        self.assertNotEqual(Comment.objects.count(), 0)
+        self.assertEqual(comment.owner, group)
+        self.assertEqual(comment.author, group)
 
     def test_fetch_discussion(self):
 

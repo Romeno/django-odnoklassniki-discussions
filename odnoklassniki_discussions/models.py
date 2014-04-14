@@ -270,6 +270,9 @@ class Comment(OdnoklassnikiModel):
 
     methods_namespace = 'discussions'
 
+    # temporary variable for distance from parse() to save()
+    author_type = None
+
     id = models.CharField(max_length=68, primary_key=True)
 
     discussion = models.ForeignKey(Discussion, related_name='comments')
@@ -319,14 +322,27 @@ class Comment(OdnoklassnikiModel):
         if 'reply_to_comment_id' in response:
             response['reply_to_comment'] = response.pop('reply_to_comment_id')
 
+        # if author is a group
+        if 'author_type' in response:
+            response.pop('author_name')
+            self.author_type = response.pop('author_type')
+
         return super(Comment, self).parse(response)
 
     def save(self, *args, **kwargs):
+        self.owner = self.discussion.owner
+
         if self.author_id:
-            try:
-                self.author = User.objects.get(pk=self.author_id)
-            except User.DoesNotExist:
-                self.author = User.remote.fetch(ids=[self.author_id])[0]
+            if self.author_type == 'GROUP':
+                if self.author_id == self.owner_id:
+                    self.author = self.owner
+                else:
+                    self.author = Group.remote.fetch(ids=[self.author_id])[0]
+            else:
+                try:
+                    self.author = User.objects.get(pk=self.author_id)
+                except User.DoesNotExist:
+                    self.author = User.remote.fetch(ids=[self.author_id])[0]
 
         # it's hard to get proper reply_to_author_content_type in case we fetch comments from last
         if self.reply_to_author_id and not self.reply_to_author_content_type:
@@ -344,8 +360,6 @@ class Comment(OdnoklassnikiModel):
             except Comment.DoesNotExist:
                 log.error("Try to save comment ID=%s with reply_to_comment_id=%s that doesn't exist in DB" % (self.pk, self.reply_to_comment_id))
                 self.reply_to_comment = None
-
-        self.owner = self.discussion.owner
 
         return super(Comment, self).save(*args, **kwargs)
 
