@@ -19,7 +19,13 @@ GROUP2_ID = 53038939046008
 GROUP_DISCUSSION2_ID = 62465446084728
 
 GROUP3_ID = 53008333209712
-GROUP_DISCUSSION_WITH_MANY_COMMENTS_ID = 62503929662320
+GROUP_DISCUSSION_WITH_MANY_COMMENTS1_ID = 62503929662320
+GROUP_DISCUSSION_WITH_MANY_COMMENTS2_ID = 62458153487216
+
+GROUP_DISCUSSION_WITH_MANY_LIKES1_ID = 62521829903216
+
+GROUP_COMMENT_WITH_MANY_LIKES1_DISCUSSION_ID = 62425402395504
+GROUP_COMMENT_WITH_MANY_LIKES1_ID = 'MTM5NDAwMzI5NjE2MzotNjAyOToxMzk0MDAzMjk2MTYzOjYyNDI1NDAyMzk1NTA0OjE='
 
 class OdnoklassnikiDiscussionsTest(TestCase):
 
@@ -35,15 +41,52 @@ class OdnoklassnikiDiscussionsTest(TestCase):
         self.assertEqual(discussions.count(), Discussion.objects.count())
         self.assertEqual(discussions.count(), group.discussions.count())
 
+    def test_fetch_discussion_likes(self):
+
+        discussion = DiscussionFactory(id=GROUP_DISCUSSION_WITH_MANY_LIKES1_ID, object_type='GROUP_TOPIC')
+        users_initial = User.objects.count()
+
+        users = discussion.fetch_likes(all=True)
+
+        self.assertTrue(discussion.likes_count > 2500)
+        self.assertEqual(discussion.likes_count, users.count())
+        self.assertEqual(discussion.likes_count, User.objects.count() - users_initial)
+        self.assertEqual(discussion.likes_count, discussion.like_users.count())
+
+    def test_fetch_comment_likes(self):
+
+        discussion = DiscussionFactory(id=GROUP_COMMENT_WITH_MANY_LIKES1_DISCUSSION_ID, object_type='GROUP_TOPIC')
+        comment = CommentFactory(id=GROUP_COMMENT_WITH_MAtypeD, object_type='GROUP_TOPIC', discussion=discussion)
+        users_initial = User.objects.count()
+
+        users = comment.fetch_likes(all=True)
+
+        self.assertTrue(comment.likes_count > 19)
+        self.assertEqual(comment.likes_count, users.count())
+        self.assertEqual(comment.likes_count, User.objects.count() - users_initial)
+        self.assertEqual(comment.likes_count, comment.like_users.count())
+
     def test_fetch_discussion_comments(self):
 
-        discussion = DiscussionFactory(id=GROUP_DISCUSSION_WITH_MANY_COMMENTS_ID, type='GROUP_TOPIC')
+        discussion = DiscussionFactory(id=GROUP_DISCUSSION_WITH_MANY_COMMENTS1_ID, object_type='GROUP_TOPIC')
 
         self.assertEqual(Comment.objects.count(), 0)
 
         comments = discussion.fetch_comments(all=True)
 
         self.assertTrue(discussion.comments_count > 2900)
+        self.assertEqual(discussion.comments_count, comments.count())
+        self.assertEqual(discussion.comments_count, Comment.objects.count())
+        self.assertEqual(discussion.comments_count, discussion.comments.count())
+
+        Comment.objects.all().delete()
+        discussion = DiscussionFactory(id=GROUP_DISCUSSION_WITH_MANY_COMMENTS2_ID, object_type='GROUP_TOPIC')
+
+        self.assertEqual(Comment.objects.count(), 0)
+
+        comments = discussion.fetch_comments(all=True)
+
+        self.assertTrue(discussion.comments_count > 1900) # now only 1188, but on the site more than 1900
         self.assertEqual(discussion.comments_count, comments.count())
         self.assertEqual(discussion.comments_count, Comment.objects.count())
         self.assertEqual(discussion.comments_count, discussion.comments.count())
@@ -106,7 +149,7 @@ class OdnoklassnikiDiscussionsTest(TestCase):
         instance.save()
 
         self.assertEqual(instance.id, 62190641299501)
-        self.assertEqual(instance.type, 'GROUP_TOPIC')
+        self.assertEqual(instance.object_type, 'GROUP_TOPIC')
         self.assertEqual(instance.message, u"Topic in the {group:47241470410797}Кока-Кола{group} group")
         self.assertEqual(instance.title, u"Кока-Кола  один из спонсоров  Олимпиады в Сочи.  Хотелось бы  видеть фото- и видео-  репортажи с Эстафеты  олимпийского огня !")
         self.assertEqual(instance.new_comments_count, 0)
@@ -141,7 +184,7 @@ class OdnoklassnikiDiscussionsTest(TestCase):
         instance.save()
 
         self.assertEqual(instance.id, 'MTM5NzIwNjM4MjQ3MTotMTU5NDE6MTM5NzIwNjM4MjQ3MTo2MjUwMzkyOTY2MjMyMDox')
-        self.assertEqual(instance.type, 'ACTIVE_MESSAGE')
+        self.assertEqual(instance.object_type, 'ACTIVE_MESSAGE')
         self.assertEqual(instance.text, u"наверное и я так буду делать!")
         self.assertEqual(instance.likes_count, 123)
         self.assertEqual(instance.liked_it, False)
