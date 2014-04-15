@@ -157,9 +157,9 @@ class Discussion(OdnoklassnikiPKModel):
 #     def __unicode__(self):
 #         return self.name
 
-#     @property
-#     def refresh_kwargs(self):
-#         return {'ids': [self.pk]}
+    @property
+    def refresh_kwargs(self):
+        return {'id': self.pk, 'type': self.object_type or 'GROUP_TOPIC'}
 
     @property
     def slug(self):

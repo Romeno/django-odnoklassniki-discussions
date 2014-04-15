@@ -128,6 +128,19 @@ class OdnoklassnikiDiscussionsTest(TestCase):
         self.assertEqual(instance.owner, Group.objects.get(pk=GROUP2_ID))
         self.assertTrue(isinstance(instance.entities, dict))
 
+    def test_refresh_discussion(self):
+
+        instance = Discussion.remote.fetch(id=GROUP_DISCUSSION1_ID, type='GROUP_TOPIC')
+        self.assertNotEqual(instance.message, 'temp')
+
+        message = instance.message
+        instance.message = 'temp'
+        instance.save()
+        self.assertEqual(instance.message, 'temp')
+
+        instance.refresh()
+        self.assertEqual(instance.message, message)
+
     def test_parse_discussion(self):
 
         response = u'''{"discussion": {
