@@ -77,7 +77,7 @@ class DiscussionRemoteManager(OdnoklassnikiManager):
             discussions = self.model.objects.none()
         else:
             feed = [feed for feed in response['feeds'] if feed['pattern'] == 'POST']
-            discussions = self.parse_response(feed, {'owner_id': group.pk, 'owner_content_type_id': ContentType.objects.get_for_model(group).pk})
+            discussions = self.parse_response(feed, {'owner_id': group.pk, 'owner_content_type_id': ContentType.objects.get_for_model(Group).pk})
             discussions = self.get_or_create_from_instances_list(discussions)
 
         return discussions, response
