@@ -73,7 +73,7 @@ class DiscussionRemoteManager(OdnoklassnikiManager):
         response = super(DiscussionRemoteManager, self).api_call(method='stream', **kwargs)
         # has_more not in dict and we need to handle pagination manualy
         if 'feeds' not in response:
-            del response['anchor']
+            response.pop('anchor', None)
             discussions = self.model.objects.none()
         else:
             feed = [feed for feed in response['feeds'] if feed['pattern'] == 'POST']
@@ -255,7 +255,7 @@ class Discussion(OdnoklassnikiPKModel):
         response = Discussion.remote.api_call(method='get_likes', **kwargs)
         # has_more not in dict and we need to handle pagination manualy
         if 'users' not in response:
-            del response['anchor']
+            response.pop('anchor', None)
             users_ids = []
         else:
             users_ids = list(User.remote.get_or_create_from_resources_list(response['users']).values_list('pk', flat=True))
@@ -382,7 +382,7 @@ class Comment(OdnoklassnikiModel):
         response = Comment.remote.api_call(method='get_likes', **kwargs)
         # has_more not in dict and we need to handle pagination manualy
         if 'users' not in response:
-            del response['anchor']
+            response.pop('anchor', None)
             users_ids = []
         else:
             users_ids = list(User.remote.get_or_create_from_resources_list(response['users']).values_list('pk', flat=True))
