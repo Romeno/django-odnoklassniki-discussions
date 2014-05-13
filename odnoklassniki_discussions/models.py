@@ -380,11 +380,10 @@ class Comment(OdnoklassnikiModel):
 #        kwargs['fields'] = Comment.remote.get_request_fields('user')
 
         response = Comment.remote.api_call(method='get_likes', **kwargs)
-        # has_more not in dict and we need to handle pagination manualy
-        if 'users' not in response:
-            response.pop('anchor', None)
-            users_ids = []
-        else:
+        users = response.get('users')
+        if users:
             users_ids = list(User.remote.get_or_create_from_resources_list(response['users']).values_list('pk', flat=True))
+        else:
+            users_ids = []
 
         return users_ids, response
